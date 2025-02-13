@@ -311,57 +311,62 @@ class WorkScreen extends StatefulWidget {
 
 class _WorkScreenState extends State<WorkScreen> {
   late final WorkScreenController _controller;
-  final ValueNotifier<double> _unitsScaleNotifier = ValueNotifier<double>(1.0);
-  final ValueNotifier<double> _cpmScaleNotifier = ValueNotifier<double>(1.0);
-  final ValueNotifier<double> _timerScaleNotifier = ValueNotifier<double>(1.0);
-  final List<ValueNotifier<Color>> _buttonColorNotifiers = []; // List of notifiers for each button
+  // Removed scale notifiers
+  // final ValueNotifier<double> _unitsScaleNotifier = ValueNotifier<double>(1.0);
+  // final ValueNotifier<double> _cpmScaleNotifier = ValueNotifier<double>(1.0);
+  // final ValueNotifier<double> _timerScaleNotifier = ValueNotifier<double>(1.0);
+  // Removed button color notifiers
+  // final List<ValueNotifier<Color>> _buttonColorNotifiers = []; // List of notifiers for each button
 
   @override
   void initState() {
     super.initState();
     _controller = WorkScreenController(workService, settingsService);
     _controller.initialize();
-    // Initialize color notifiers for each click option
-    _buttonColorNotifiers.addAll(List.generate(settingsService.settings.value.clickOptions.length, (_) => ValueNotifier<Color>(Colors.transparent)));
+    // Removed color notifier initialization
+    // _buttonColorNotifiers.addAll(List.generate(settingsService.settings.value.clickOptions.length, (_) => ValueNotifier<Color>(Colors.transparent)));
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _unitsScaleNotifier.dispose();
-    _cpmScaleNotifier.dispose();
-    _timerScaleNotifier.dispose();
-    for (final notifier in _buttonColorNotifiers) {
-      notifier.dispose();
-    }
+    // Removed notifier disposal
+    // _unitsScaleNotifier.dispose();
+    // _cpmScaleNotifier.dispose();
+    // _timerScaleNotifier.dispose();
+    // for (final notifier in _buttonColorNotifiers) {
+    //   notifier.dispose();
+    // }
     super.dispose();
   }
 
   void _incrementUnits(int index, int count) { // Pass index of button clicked
     _controller.incrementUnits(count);
-    _animateMetricPop(_unitsScaleNotifier);
-    _animateButtonColorFlash(index); // Flash only clicked button
+    // Removed animation calls
+    // _animateMetricPop(_unitsScaleNotifier);
+    // _animateButtonColorFlash(index); // Flash only clicked button
   }
 
   void _incrementUnitsByPreset(int index, int count) { // Pass index to preset increment
     _incrementUnits(index, count);
   }
 
-  void _animateMetricPop(ValueNotifier<double> notifier) {
-    notifier.value = 1.2;
-    Future.delayed(const Duration(milliseconds: 300), () {
-      notifier.value = 1.0;
-    });
-  }
+  // Removed animation methods
+  // void _animateMetricPop(ValueNotifier<double> notifier) {
+  //   notifier.value = 1.2;
+  //   Future.delayed(const Duration(milliseconds: 300), () {
+  //     notifier.value = 1.0;
+  //   });
+  // }
 
-  void _animateButtonColorFlash(int index) {
-    if (index >= 0 && index < _buttonColorNotifiers.length) { // Check index validity
-      _buttonColorNotifiers[index].value = Colors.white.withOpacity(0.2); // Quick white flash
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _buttonColorNotifiers[index].value = Colors.transparent; // Revert to transparent
-      });
-    }
-  }
+  // void _animateButtonColorFlash(int index) {
+  //   if (index >= 0 && index < _buttonColorNotifiers.length) { // Check index validity
+  //     _buttonColorNotifiers[index].value = Colors.white.withOpacity(0.2); // Quick white flash
+  //     Future.delayed(const Duration(milliseconds: 100), () {
+  //       _buttonColorNotifiers[index].value = Colors.transparent; // Revert to transparent
+  //     });
+  //   }
+  // }
 
 
   String _formatTime(Duration duration) {
@@ -404,19 +409,22 @@ class _WorkScreenState extends State<WorkScreen> {
                   children: [
                     _MetricDisplay( // Generic Metric Display Widget
                       label: 'Time',
-                      notifier: _timerScaleNotifier,
+                      // Removed notifier
+                      // notifier: _timerScaleNotifier,
                       metrics: metrics,
                       valueBuilder: (metrics) => _formatTime(metrics.elapsedTime),
                     ),
                     _MetricDisplay( // Generic Metric Display Widget
                       label: 'Units',
-                      notifier: _unitsScaleNotifier,
+                      // Removed notifier
+                      // notifier: _unitsScaleNotifier,
                       metrics: metrics,
                       valueBuilder: (metrics) => '${metrics.totalUnits}',
                     ),
                     _MetricDisplay( // Generic Metric Display Widget
                       label: 'Units/min',
-                      notifier: _cpmScaleNotifier,
+                      // Removed notifier
+                      // notifier: _cpmScaleNotifier,
                       metrics: metrics,
                       valueBuilder: (metrics) => metrics.clicksPerMinute.toStringAsFixed(1),
                     ),
@@ -450,7 +458,9 @@ class _WorkScreenState extends State<WorkScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 4.0), // Vertical spacing between buttons
                           child: _TerminalClickArea(
                             onTap: () => _incrementUnitsByPreset(index, option), // Pass index here
-                            flashColorNotifier: _buttonColorNotifiers[index], // Get notifier by index
+                            // Removed flash color notifier
+                            // flashColorNotifier: _buttonColorNotifiers[index], // Get notifier by index
+                            flashColorNotifier: ValueNotifier<Color>(Colors.transparent), // Dummy notifier to keep widget structure, no animation
                             child: Center(child: Text('+${option} ${settings.workUnitLabel}', textAlign: TextAlign.center)), // Center text
                           ),
                         ),
@@ -472,14 +482,16 @@ class _WorkScreenState extends State<WorkScreen> {
 /// Corrected and Generic Metric Display Widget (DRY & KISS Compliant) - Widget Class
 class _MetricDisplay extends StatelessWidget {
   final String label;
-  final ValueNotifier<double> notifier;
+  // Removed notifier
+  // final ValueNotifier<double> notifier;
   final WorkMetrics metrics;
   final String Function(WorkMetrics) valueBuilder;
 
   const _MetricDisplay({
     super.key,
     required this.label,
-    required this.notifier,
+    // Removed notifier
+    // required this.notifier,
     required this.metrics,
     required this.valueBuilder,
   });
@@ -492,17 +504,19 @@ class _MetricDisplay extends StatelessWidget {
           valueListenable: settingsService.settings,
           builder: (context, settings, child) => Text('$label:', style: Theme.of(context).textTheme.bodyMedium),
         ),
-        ValueListenableBuilder<double>(
-          valueListenable: notifier,
-          builder: (context, scale, child) => AnimatedScale(
-            scale: scale,
-            duration: const Duration(milliseconds: 300),
-            child: Text(
+        // Removed ValueListenableBuilder and AnimatedScale
+        // ValueListenableBuilder<double>(
+        //   valueListenable: notifier,
+        //   builder: (context, scale, child) => AnimatedScale(
+        //     scale: scale,
+        //     duration: const Duration(milliseconds: 300),
+        //     child:
+            Text(
               valueBuilder(metrics), // Use the valueBuilder function to get value
               style: Theme.of(context).textTheme.titleLarge!.copyWith(color: Colors.lightGreenAccent),
             ),
-          ),
-        ),
+        //   ),
+        // ),
       ],
     );
   }
@@ -712,7 +726,9 @@ class _TerminalButton extends StatelessWidget {
 class _TerminalClickArea extends StatelessWidget {
   final VoidCallback onTap;
   final Widget child;
-  final ValueNotifier<Color> flashColorNotifier;
+  // Removed flashColorNotifier
+  // final ValueNotifier<Color> flashColorNotifier;
+  final ValueNotifier<Color> flashColorNotifier; // Keep notifier, but it's now a dummy
 
   const _TerminalClickArea({required this.onTap, required this.child, required this.flashColorNotifier});
 
@@ -725,7 +741,7 @@ class _TerminalClickArea extends StatelessWidget {
         builder: (context, flashColor, child) => Container(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10), // Reduced vertical padding
           decoration: BoxDecoration(
-            color: flashColor,
+            color: flashColor, // flashColor is still here, but no animation logic
             border: Border(bottom: BorderSide(color: Colors.grey, width: 1)), // Underline border
           ),
           child: DefaultTextStyle(
