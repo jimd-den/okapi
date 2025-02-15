@@ -9,20 +9,29 @@ abstract class WorkDataSource {
 class InMemoryWorkDataSource implements WorkDataSource {
   int totalUnits = 0;
   DateTime? startTime;
-  List<DateTime> clickTimestamps = [];
+  final List<DateTime> clickTimestamps = [];
+  static const int maxTimestampHistory =
+      100; // Limit history to reduce memory usage
 
   @override
   void startWork() {
     startTime = DateTime.now();
     totalUnits = 0;
-    clickTimestamps = [];
+    clickTimestamps.clear();
   }
 
   @override
   void incrementUnits(int count) {
-    for (int i = 0; i < count; i++) {
-      totalUnits++;
-      clickTimestamps.add(DateTime.now());
+    totalUnits += count;
+    final now = DateTime.now();
+    clickTimestamps.add(now);
+
+    // Keep only recent timestamps to limit memory usage
+    if (clickTimestamps.length > maxTimestampHistory) {
+      clickTimestamps.removeRange(
+        0,
+        clickTimestamps.length - maxTimestampHistory,
+      );
     }
   }
 

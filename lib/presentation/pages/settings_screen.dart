@@ -98,100 +98,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        title: const Text('Settings'),
+        actions: [
+          IconButton(icon: const Icon(Icons.check), onPressed: _saveSettings),
+        ],
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: <Widget>[
-            TextFormField(
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            TextField(
               controller: workTaskerLabelController,
-              decoration: const InputDecoration(labelText: 'App Title Label'),
-              validator:
-                  (value) => value == null || value.isEmpty ? 'Required' : null,
+              decoration: const InputDecoration(labelText: 'App Title'),
             ),
-            TextFormField(
+            TextField(
               controller: workInProgressLabelController,
-              decoration: const InputDecoration(
-                labelText: 'Work In Progress Label',
-              ),
-              validator:
-                  (value) => value == null || value.isEmpty ? 'Required' : null,
+              decoration: const InputDecoration(labelText: 'Work In Progress'),
             ),
-            TextFormField(
+            TextField(
               controller: startWorkdayLabelController,
-              decoration: const InputDecoration(
-                labelText: 'Start Workday Button Label',
-              ),
-              validator:
-                  (value) => value == null || value.isEmpty ? 'Required' : null,
+              decoration: const InputDecoration(labelText: 'Start Button'),
             ),
-            TextFormField(
+            TextField(
               controller: readyToWorkLabelController,
-              decoration: const InputDecoration(
-                labelText: 'Ready To Work Label',
-              ),
-              validator:
-                  (value) => value == null || value.isEmpty ? 'Required' : null,
+              decoration: const InputDecoration(labelText: 'Ready Message'),
             ),
-            TextFormField(
-              controller: tasksButtonLabelController,
-              decoration: const InputDecoration(
-                labelText: 'Tasks Button Label',
-              ),
-              validator:
-                  (value) => value == null || value.isEmpty ? 'Required' : null,
-            ),
-            TextFormField(
+            TextField(
               controller: workUnitController,
-              decoration: const InputDecoration(
-                labelText: 'Work Unit Label (e.g., Units, Items)',
-              ),
-              validator:
-                  (value) => value == null || value.isEmpty ? 'Required' : null,
+              decoration: const InputDecoration(labelText: 'Unit Label'),
             ),
-            TextFormField(
+            TextField(
               controller: cpmLabelController,
-              decoration: const InputDecoration(
-                labelText: 'Clicks Per Minute Label',
-              ),
-              validator:
-                  (value) => value == null || value.isEmpty ? 'Required' : null,
+              decoration: const InputDecoration(labelText: 'Speed Label'),
             ),
-            TextFormField(
+            TextField(
               controller: timeLabelController,
               decoration: const InputDecoration(labelText: 'Time Label'),
-              validator:
-                  (value) => value == null || value.isEmpty ? 'Required' : null,
             ),
-            const SizedBox(height: 15),
-            Text(
-              "Click Options (at least 1):",
-              style: Theme.of(context).textTheme.bodyMedium,
+            const Padding(
+              padding: EdgeInsets.only(top: 16.0, bottom: 8.0),
+              child: Text('Click Values'),
             ),
             ...clickOptionControllers.asMap().entries.map((entry) {
-              int index = entry.key;
-              TextEditingController controller = entry.value;
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: TextFormField(
-                  controller: controller,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: 'Option ${index + 1}'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return 'Required';
-                    if (int.tryParse(value) == null) return 'Must be a number';
-                    if (int.parse(value) <= 0) return 'Must be positive';
-                    return null;
-                  },
+              return TextField(
+                controller: entry.value,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Value ${entry.key + 1}',
                 ),
               );
             }),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _saveSettings,
-              child: const Text('Save Settings'),
-            ),
           ],
         ),
       ),

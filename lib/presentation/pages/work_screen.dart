@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/terminal_widgets.dart';
+import '../widgets/simple_widgets.dart';
 import 'app.dart';
 import 'settings_screen.dart';
 import 'work_screen_controller.dart';
@@ -45,7 +45,7 @@ class _WorkScreenState extends State<WorkScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.greenAccent),
+            icon: const Icon(Icons.settings),
             onPressed: () {
               Navigator.push(
                 context,
@@ -54,17 +54,16 @@ class _WorkScreenState extends State<WorkScreen> {
             },
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(70.0),
-          child: ValueListenableBuilder(
-            valueListenable: _controller.metrics,
-            builder:
-                (context, metrics, child) => Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 15.0,
-                    vertical: 10.0,
-                  ),
-                  child: Row(
+      ),
+      body: Column(
+        children: [
+          // Metrics display
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ValueListenableBuilder(
+              valueListenable: _controller.metrics,
+              builder:
+                  (context, metrics, child) => Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       MetricDisplay(
@@ -77,63 +76,34 @@ class _WorkScreenState extends State<WorkScreen> {
                       ),
                       MetricDisplay(
                         label: 'Units/min',
-                        value: metrics.clicksPerMinute.toStringAsFixed(
-                          3,
-                        ), // Changed to 3 decimal places
+                        value: metrics.clicksPerMinute.toStringAsFixed(3),
                       ),
                     ],
                   ),
-                ),
+            ),
           ),
-        ),
-      ),
-      body: DefaultTextStyle(
-        style: Theme.of(context).textTheme.bodyMedium!,
-        child: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: ValueListenableBuilder(
-            valueListenable: _controller.settings,
-            builder:
-                (context, settings, child) => Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children:
-                            settings.clickOptions
-                                .map(
-                                  (option) => Expanded(
-                                    flex: 1,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 4.0,
-                                      ),
-                                      child: TerminalClickArea(
-                                        onTap:
-                                            () => _controller.incrementUnits(
-                                              option,
-                                            ),
-                                        child: Center(
-                                          child: Text(
-                                            '+$option ${settings.workUnitLabel}',
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                      ),
-                    ),
-                    const Spacer(flex: 2),
-                  ],
-                ),
+          // Click buttons
+          Expanded(
+            child: ValueListenableBuilder(
+              valueListenable: _controller.settings,
+              builder:
+                  (context, settings, child) => ListView.builder(
+                    padding: const EdgeInsets.all(16.0),
+                    itemCount: settings.clickOptions.length,
+                    itemBuilder: (context, index) {
+                      final option = settings.clickOptions[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: ElevatedButton(
+                          onPressed: () => _controller.incrementUnits(option),
+                          child: Text('+$option ${settings.workUnitLabel}'),
+                        ),
+                      );
+                    },
+                  ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -21,7 +21,7 @@ class WorkClickerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Work Tasker',
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.theme,
       home: const StartScreen(),
     );
   }

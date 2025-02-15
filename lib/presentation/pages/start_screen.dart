@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import '../widgets/terminal_widgets.dart';
+import '../widgets/simple_widgets.dart';
 import 'app.dart';
-import 'settings_screen.dart';
 import 'work_screen.dart';
 
 class StartScreen extends StatelessWidget {
@@ -28,14 +27,13 @@ class StartScreen extends StatelessWidget {
                   (context, settings, child) => Text(
                     settings?.readyToWorkLabel ?? 'Ready to get to work?',
                     style: Theme.of(context).textTheme.titleLarge,
-                    textAlign: TextAlign.center,
                   ),
             ),
             const SizedBox(height: 20),
             ValueListenableBuilder(
               valueListenable: settingsService.settings,
               builder:
-                  (context, settings, child) => TerminalButton(
+                  (context, settings, child) => SimpleButton(
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,

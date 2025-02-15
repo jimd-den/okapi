@@ -20,9 +20,10 @@ class WorkRepositoryImpl implements WorkRepository {
   WorkMetrics calculateMetrics(WorkData data) {
     double clicksPerMinute = 0;
     int totalUnits = data.totalUnits;
-    Duration elapsedTime = data.startTime != null 
-        ? DateTime.now().difference(data.startTime!) 
-        : Duration.zero;
+    Duration elapsedTime =
+        data.startTime != null
+            ? DateTime.now().difference(data.startTime!)
+            : Duration.zero;
 
     // Calculate clicks per minute using total seconds for more accuracy
     if (totalUnits > 0 && elapsedTime.inMilliseconds > 0) {

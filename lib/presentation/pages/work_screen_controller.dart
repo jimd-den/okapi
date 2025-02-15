@@ -12,6 +12,7 @@ class WorkScreenController {
     WorkMetrics(totalUnits: 0, clicksPerMinute: 0, elapsedTime: Duration.zero),
   );
   Timer? _timer;
+  DateTime? _lastUpdate;
 
   WorkScreenController(this._workService, this._settingsService);
 
@@ -25,8 +26,16 @@ class WorkScreenController {
   }
 
   void startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      updateMetrics();
+    // Update every 2 seconds instead of every second to reduce resource usage
+    _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      // Only update if there are units to calculate or if it's been more than 2 seconds
+      final now = DateTime.now();
+      if (_lastUpdate == null ||
+          metrics.value.totalUnits > 0 ||
+          now.difference(_lastUpdate!) >= const Duration(seconds: 2)) {
+        updateMetrics();
+        _lastUpdate = now;
+      }
     });
   }
 
@@ -38,6 +47,7 @@ class WorkScreenController {
   void incrementUnits(int count) {
     _workService.incrementUnits(count);
     updateMetrics();
+    _lastUpdate = DateTime.now();
   }
 
   ValueNotifier<SettingsData> get settings => _settingsService.settings;
