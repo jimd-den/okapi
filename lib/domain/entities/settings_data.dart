@@ -9,7 +9,7 @@ class SettingsData {
   final String workInProgressLabel;
   final String workTaskerLabel;
   final String readyToWorkLabel;
-  final List<int> clickOptions;
+  final int multiClickValue;
 
   SettingsData({
     this.workUnitLabel = 'Units',
@@ -20,7 +20,7 @@ class SettingsData {
     this.workTaskerLabel = 'Work Tasker',
     this.startWorkdayLabel = 'Start Workday!',
     this.readyToWorkLabel = 'Ready to get to work?',
-    this.clickOptions = const [1, 5, 10, 25, 50, 100],
+    this.multiClickValue = 5,
   });
 
   SettingsData copyWith({
@@ -32,7 +32,7 @@ class SettingsData {
     String? workInProgressLabel,
     String? workTaskerLabel,
     String? readyToWorkLabel,
-    List<int>? clickOptions,
+    int? multiClickValue,
   }) {
     return SettingsData(
       workUnitLabel: workUnitLabel ?? this.workUnitLabel,
@@ -43,7 +43,7 @@ class SettingsData {
       workInProgressLabel: workInProgressLabel ?? this.workInProgressLabel,
       workTaskerLabel: workTaskerLabel ?? this.workTaskerLabel,
       readyToWorkLabel: readyToWorkLabel ?? this.readyToWorkLabel,
-      clickOptions: clickOptions ?? this.clickOptions,
+      multiClickValue: multiClickValue ?? this.multiClickValue,
     );
   }
 }

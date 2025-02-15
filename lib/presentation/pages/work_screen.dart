@@ -40,8 +40,7 @@ class _WorkScreenState extends State<WorkScreen> {
       appBar: AppBar(
         title: ValueListenableBuilder(
           valueListenable: _controller.settings,
-          builder:
-              (context, settings, child) => Text(settings.workInProgressLabel),
+          builder: (context, settings, child) => Text(settings.workInProgressLabel),
         ),
         actions: [
           IconButton(
@@ -62,45 +61,78 @@ class _WorkScreenState extends State<WorkScreen> {
             padding: const EdgeInsets.all(16.0),
             child: ValueListenableBuilder(
               valueListenable: _controller.metrics,
-              builder:
-                  (context, metrics, child) => Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      MetricDisplay(
-                        label: 'Time',
-                        value: _formatTime(metrics.elapsedTime),
-                      ),
-                      MetricDisplay(
-                        label: 'Units',
-                        value: '${metrics.totalUnits}',
-                      ),
-                      MetricDisplay(
-                        label: 'Units/min',
-                        value: metrics.clicksPerMinute.toStringAsFixed(3),
-                      ),
-                    ],
+              builder: (context, metrics, child) => Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  MetricDisplay(
+                    label: 'Time',
+                    value: _formatTime(metrics.elapsedTime),
                   ),
+                  MetricDisplay(
+                    label: 'Units',
+                    value: '${metrics.totalUnits}',
+                  ),
+                  MetricDisplay(
+                    label: 'Units/min',
+                    value: metrics.clicksPerMinute.toStringAsFixed(3),
+                  ),
+                ],
+              ),
             ),
           ),
-          // Click buttons
+          // Button area
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: _controller.settings,
-              builder:
-                  (context, settings, child) => ListView.builder(
-                    padding: const EdgeInsets.all(16.0),
-                    itemCount: settings.clickOptions.length,
-                    itemBuilder: (context, index) {
-                      final option = settings.clickOptions[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: ElevatedButton(
-                          onPressed: () => _controller.incrementUnits(option),
-                          child: Text('+$option ${settings.workUnitLabel}'),
+              builder: (context, settings, child) => Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    // Large single click button - takes up 2/3 of remaining space
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: () => _controller.incrementUnits(1),
+                            child: Text(
+                              '+1 ${settings.workUnitLabel}',
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                          ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    ),
+                    // Medium multi click button - takes up 1/3 of remaining space
+                    Expanded(
+                      flex: 1,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: () => _controller.incrementUnits(settings.multiClickValue),
+                          child: Text(
+                            '+${settings.multiClickValue} ${settings.workUnitLabel}',
+                            style: const TextStyle(fontSize: 20),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],

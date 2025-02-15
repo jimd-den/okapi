@@ -11,65 +11,32 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController workUnitController;
-  late final TextEditingController tasksButtonLabelController;
-  late final TextEditingController cpmLabelController;
-  late final TextEditingController timeLabelController;
   late final TextEditingController workInProgressLabelController;
   late final TextEditingController workTaskerLabelController;
   late final TextEditingController startWorkdayLabelController;
   late final TextEditingController readyToWorkLabelController;
-  late final List<TextEditingController> clickOptionControllers;
+  late final TextEditingController multiClickValueController;
 
   @override
   void initState() {
     super.initState();
     final currentSettings = settingsService.settings.value;
-    workUnitController = TextEditingController(
-      text: currentSettings.workUnitLabel,
-    );
-    tasksButtonLabelController = TextEditingController(
-      text: currentSettings.tasksButtonLabel,
-    );
-    cpmLabelController = TextEditingController(text: currentSettings.cpmLabel);
-    timeLabelController = TextEditingController(
-      text: currentSettings.timeLabel,
-    );
-    workInProgressLabelController = TextEditingController(
-      text: currentSettings.workInProgressLabel,
-    );
-    workTaskerLabelController = TextEditingController(
-      text: currentSettings.workTaskerLabel,
-    );
-    startWorkdayLabelController = TextEditingController(
-      text: currentSettings.startWorkdayLabel,
-    );
-    readyToWorkLabelController = TextEditingController(
-      text: currentSettings.readyToWorkLabel,
-    );
-    clickOptionControllers = List.generate(
-      6,
-      (index) => TextEditingController(
-        text:
-            index < currentSettings.clickOptions.length
-                ? currentSettings.clickOptions[index].toString()
-                : '0',
-      ),
-    );
+    workUnitController = TextEditingController(text: currentSettings.workUnitLabel);
+    workInProgressLabelController = TextEditingController(text: currentSettings.workInProgressLabel);
+    workTaskerLabelController = TextEditingController(text: currentSettings.workTaskerLabel);
+    startWorkdayLabelController = TextEditingController(text: currentSettings.startWorkdayLabel);
+    readyToWorkLabelController = TextEditingController(text: currentSettings.readyToWorkLabel);
+    multiClickValueController = TextEditingController(text: currentSettings.multiClickValue.toString());
   }
 
   @override
   void dispose() {
     workUnitController.dispose();
-    tasksButtonLabelController.dispose();
-    cpmLabelController.dispose();
-    timeLabelController.dispose();
     workInProgressLabelController.dispose();
     workTaskerLabelController.dispose();
     startWorkdayLabelController.dispose();
     readyToWorkLabelController.dispose();
-    for (var controller in clickOptionControllers) {
-      controller.dispose();
-    }
+    multiClickValueController.dispose();
     super.dispose();
   }
 
@@ -77,18 +44,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (_formKey.currentState!.validate()) {
       final newSettings = settingsService.settings.value.copyWith(
         workUnitLabel: workUnitController.text,
-        tasksButtonLabel: tasksButtonLabelController.text,
-        cpmLabel: cpmLabelController.text,
-        timeLabel: timeLabelController.text,
         workInProgressLabel: workInProgressLabelController.text,
         workTaskerLabel: workTaskerLabelController.text,
         startWorkdayLabel: startWorkdayLabelController.text,
         readyToWorkLabel: readyToWorkLabelController.text,
-        clickOptions:
-            clickOptionControllers
-                .map((controller) => int.tryParse(controller.text) ?? 0)
-                .where((val) => val > 0)
-                .toList(),
+        multiClickValue: int.tryParse(multiClickValueController.text) ?? 5,
       );
       settingsService.updateSettings(newSettings);
       Navigator.pop(context);
@@ -101,7 +61,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: const Text('Settings'),
         actions: [
-          IconButton(icon: const Icon(Icons.check), onPressed: _saveSettings),
+          IconButton(
+            icon: const Icon(Icons.check),
+            onPressed: _saveSettings,
+          ),
         ],
       ),
       body: Form(
@@ -109,47 +72,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            TextField(
+            TextFormField(
               controller: workTaskerLabelController,
               decoration: const InputDecoration(labelText: 'App Title'),
+              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
             ),
-            TextField(
+            TextFormField(
               controller: workInProgressLabelController,
               decoration: const InputDecoration(labelText: 'Work In Progress'),
+              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
             ),
-            TextField(
+            TextFormField(
               controller: startWorkdayLabelController,
               decoration: const InputDecoration(labelText: 'Start Button'),
+              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
             ),
-            TextField(
+            TextFormField(
               controller: readyToWorkLabelController,
               decoration: const InputDecoration(labelText: 'Ready Message'),
+              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
             ),
-            TextField(
+            TextFormField(
               controller: workUnitController,
               decoration: const InputDecoration(labelText: 'Unit Label'),
+              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
             ),
-            TextField(
-              controller: cpmLabelController,
-              decoration: const InputDecoration(labelText: 'Speed Label'),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: multiClickValueController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Multi-Click Value',
+                helperText: 'Number of units for the second button',
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Required';
+                final number = int.tryParse(value);
+                if (number == null || number <= 1) return 'Must be greater than 1';
+                return null;
+              },
             ),
-            TextField(
-              controller: timeLabelController,
-              decoration: const InputDecoration(labelText: 'Time Label'),
-            ),
-            const Padding(
-              padding: EdgeInsets.only(top: 16.0, bottom: 8.0),
-              child: Text('Click Values'),
-            ),
-            ...clickOptionControllers.asMap().entries.map((entry) {
-              return TextField(
-                controller: entry.value,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Value ${entry.key + 1}',
-                ),
-              );
-            }),
           ],
         ),
       ),
