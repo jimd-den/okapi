@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// Simple button without custom styling
+// Simple button with theme-aware styling
 class SimpleButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final Widget child;
@@ -9,11 +9,20 @@ class SimpleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(onPressed: onPressed, child: child);
+    final theme = Theme.of(context);
+    return ElevatedButton(
+      onPressed: onPressed,
+      child: DefaultTextStyle(
+        style: theme.textTheme.titleMedium!.copyWith(
+          color: theme.colorScheme.onPrimary,
+        ),
+        child: child,
+      ),
+    );
   }
 }
 
-// Simple metric display without custom styling
+// Simple metric display with theme-aware styling
 class MetricDisplay extends StatelessWidget {
   final String label;
   final String value;
@@ -22,6 +31,24 @@ class MetricDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [Text(label), Text(value)]);
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: theme.colorScheme.onBackground,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
   }
 }

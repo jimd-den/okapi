@@ -19,20 +19,34 @@ class WorkScreenController {
   void initialize() {
     _workService.startWork();
     startTimer();
+    // Listen to settings changes to update timer interval
+    _settingsService.settings.addListener(_onSettingsChanged);
   }
 
   void dispose() {
     _timer?.cancel();
+    _settingsService.settings.removeListener(_onSettingsChanged);
+  }
+
+  void _onSettingsChanged() {
+    // Restart timer with new interval when settings change
+    _timer?.cancel();
+    startTimer();
   }
 
   void startTimer() {
-    // Update every 2 seconds instead of every second to reduce resource usage
-    _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      // Only update if there are units to calculate or if it's been more than 2 seconds
+    final useMilliseconds =
+        _settingsService.settings.value.useMillisecondUpdates;
+    final interval =
+        useMilliseconds
+            ? const Duration(milliseconds: 1)
+            : const Duration(seconds: 2);
+
+    _timer = Timer.periodic(interval, (timer) {
       final now = DateTime.now();
       if (_lastUpdate == null ||
           metrics.value.totalUnits > 0 ||
-          now.difference(_lastUpdate!) >= const Duration(seconds: 2)) {
+          now.difference(_lastUpdate!) >= interval) {
         updateMetrics();
         _lastUpdate = now;
       }

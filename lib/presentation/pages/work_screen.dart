@@ -13,6 +13,7 @@ class WorkScreen extends StatefulWidget {
 
 class _WorkScreenState extends State<WorkScreen> {
   late final WorkScreenController _controller;
+  bool _showUnitsPerHour = false;
 
   @override
   void initState() {
@@ -34,17 +35,29 @@ class _WorkScreenState extends State<WorkScreen> {
     return "${twoDigits(duration.inHours)}:$minutes:$seconds";
   }
 
+  String _formatUnitsRate(double unitsPerMinute) {
+    if (_showUnitsPerHour) {
+      return (unitsPerMinute * 60).toStringAsFixed(1);
+    }
+    return unitsPerMinute.toStringAsFixed(3);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: ValueListenableBuilder(
           valueListenable: _controller.settings,
-          builder: (context, settings, child) => Text(settings.workInProgressLabel),
+          builder:
+              (context, settings, child) => Text(
+                settings.workTaskerLabel,
+                style: theme.textTheme.titleLarge,
+              ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: Icon(Icons.settings, color: theme.colorScheme.onBackground),
             onPressed: () {
               Navigator.push(
                 context,
@@ -56,83 +69,97 @@ class _WorkScreenState extends State<WorkScreen> {
       ),
       body: Column(
         children: [
-          // Metrics display
-          Padding(
+          Container(
             padding: const EdgeInsets.all(16.0),
+            color: theme.colorScheme.surface,
             child: ValueListenableBuilder(
-              valueListenable: _controller.metrics,
-              builder: (context, metrics, child) => Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  MetricDisplay(
-                    label: 'Time',
-                    value: _formatTime(metrics.elapsedTime),
+              valueListenable: _controller.settings,
+              builder:
+                  (context, settings, child) => ValueListenableBuilder(
+                    valueListenable: _controller.metrics,
+                    builder:
+                        (context, metrics, child) => Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            MetricDisplay(
+                              label: 'Time',
+                              value: _formatTime(metrics.elapsedTime),
+                            ),
+                            MetricDisplay(
+                              label: settings.workUnitLabel,
+                              value: '${metrics.totalUnits}',
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _showUnitsPerHour = !_showUnitsPerHour;
+                                });
+                              },
+                              child: MetricDisplay(
+                                label:
+                                    _showUnitsPerHour
+                                        ? '${settings.workUnitLabel}/hr'
+                                        : '${settings.workUnitLabel}/min',
+                                value: _formatUnitsRate(
+                                  metrics.clicksPerMinute,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                   ),
-                  MetricDisplay(
-                    label: 'Units',
-                    value: '${metrics.totalUnits}',
-                  ),
-                  MetricDisplay(
-                    label: 'Units/min',
-                    value: metrics.clicksPerMinute.toStringAsFixed(3),
-                  ),
-                ],
-              ),
             ),
           ),
-          // Button area
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: _controller.settings,
-              builder: (context, settings, child) => Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    // Large single click button - takes up 2/3 of remaining space
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+              builder:
+                  (context, settings, child) => Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                style: theme.elevatedButtonTheme.style,
+                                onPressed: () => _controller.incrementUnits(1),
+                                child: Text(
+                                  '+1 ${settings.workUnitLabel}',
+                                  style: theme.textTheme.headlineMedium
+                                      ?.copyWith(
+                                        color: theme.colorScheme.onPrimary,
+                                      ),
+                                ),
                               ),
                             ),
-                            onPressed: () => _controller.incrementUnits(1),
-                            child: Text(
-                              '+1 ${settings.workUnitLabel}',
-                              style: const TextStyle(fontSize: 24),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: theme.elevatedButtonTheme.style,
+                              onPressed:
+                                  () => _controller.incrementUnits(
+                                    settings.multiClickValue,
+                                  ),
+                              child: Text(
+                                '+${settings.multiClickValue} ${settings.workUnitLabel}',
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  color: theme.colorScheme.onPrimary,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                    // Medium multi click button - takes up 1/3 of remaining space
-                    Expanded(
-                      flex: 1,
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onPressed: () => _controller.incrementUnits(settings.multiClickValue),
-                          child: Text(
-                            '+${settings.multiClickValue} ${settings.workUnitLabel}',
-                            style: const TextStyle(fontSize: 20),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
             ),
           ),
         ],

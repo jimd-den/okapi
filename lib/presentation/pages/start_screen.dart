@@ -8,46 +8,87 @@ class StartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: ValueListenableBuilder(
           valueListenable: settingsService.settings,
           builder:
-              (context, settings, child) =>
-                  Text(settings?.workTaskerLabel ?? 'Work Tasker'),
+              (context, settings, child) => Text(
+                settings.workTaskerLabel,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: theme.colorScheme.onBackground,
+                ),
+              ),
         ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            ValueListenableBuilder(
-              valueListenable: settingsService.settings,
-              builder:
-                  (context, settings, child) => Text(
-                    settings?.readyToWorkLabel ?? 'Ready to get to work?',
-                    style: Theme.of(context).textTheme.titleLarge,
+        actions: [
+          ValueListenableBuilder(
+            valueListenable: settingsService.settings,
+            builder:
+                (context, settings, child) => IconButton(
+                  icon: Icon(
+                    settings.useHighContrast
+                        ? Icons.light_mode
+                        : Icons.dark_mode,
+                    color: theme.colorScheme.onBackground,
                   ),
-            ),
-            const SizedBox(height: 20),
-            ValueListenableBuilder(
-              valueListenable: settingsService.settings,
-              builder:
-                  (context, settings, child) => SimpleButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const WorkScreen(),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      settings?.startWorkdayLabel ?? 'Start Workday!',
+                  onPressed: () {
+                    final newSettings = settings.copyWith(
+                      useHighContrast: !settings.useHighContrast,
+                    );
+                    settingsService.updateSettings(newSettings);
+                  },
+                  tooltip:
+                      settings.useHighContrast
+                          ? 'Switch to Light Mode'
+                          : 'Switch to Dark Mode',
+                ),
+          ),
+        ],
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [theme.colorScheme.surface, theme.colorScheme.background],
+          ),
+        ),
+        child: Center(
+          child: Card(
+            margin: const EdgeInsets.all(32),
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    'Ready to track your work?',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: SimpleButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const WorkScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text('Start Working'),
                     ),
                   ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );

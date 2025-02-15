@@ -11,31 +11,28 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController workUnitController;
-  late final TextEditingController workInProgressLabelController;
   late final TextEditingController workTaskerLabelController;
-  late final TextEditingController startWorkdayLabelController;
-  late final TextEditingController readyToWorkLabelController;
   late final TextEditingController multiClickValueController;
 
   @override
   void initState() {
     super.initState();
     final currentSettings = settingsService.settings.value;
-    workUnitController = TextEditingController(text: currentSettings.workUnitLabel);
-    workInProgressLabelController = TextEditingController(text: currentSettings.workInProgressLabel);
-    workTaskerLabelController = TextEditingController(text: currentSettings.workTaskerLabel);
-    startWorkdayLabelController = TextEditingController(text: currentSettings.startWorkdayLabel);
-    readyToWorkLabelController = TextEditingController(text: currentSettings.readyToWorkLabel);
-    multiClickValueController = TextEditingController(text: currentSettings.multiClickValue.toString());
+    workUnitController = TextEditingController(
+      text: currentSettings.workUnitLabel,
+    );
+    workTaskerLabelController = TextEditingController(
+      text: currentSettings.workTaskerLabel,
+    );
+    multiClickValueController = TextEditingController(
+      text: currentSettings.multiClickValue.toString(),
+    );
   }
 
   @override
   void dispose() {
     workUnitController.dispose();
-    workInProgressLabelController.dispose();
     workTaskerLabelController.dispose();
-    startWorkdayLabelController.dispose();
-    readyToWorkLabelController.dispose();
     multiClickValueController.dispose();
     super.dispose();
   }
@@ -44,10 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (_formKey.currentState!.validate()) {
       final newSettings = settingsService.settings.value.copyWith(
         workUnitLabel: workUnitController.text,
-        workInProgressLabel: workInProgressLabelController.text,
         workTaskerLabel: workTaskerLabelController.text,
-        startWorkdayLabel: startWorkdayLabelController.text,
-        readyToWorkLabel: readyToWorkLabelController.text,
         multiClickValue: int.tryParse(multiClickValueController.text) ?? 5,
       );
       settingsService.updateSettings(newSettings);
@@ -57,12 +51,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
         actions: [
+          ValueListenableBuilder(
+            valueListenable: settingsService.settings,
+            builder:
+                (context, settings, child) => IconButton(
+                  icon: Icon(
+                    settings.useHighContrast
+                        ? Icons.light_mode
+                        : Icons.dark_mode,
+                    color: theme.colorScheme.onBackground,
+                  ),
+                  onPressed: () {
+                    final newSettings = settings.copyWith(
+                      useHighContrast: !settings.useHighContrast,
+                    );
+                    settingsService.updateSettings(newSettings);
+                  },
+                  tooltip:
+                      settings.useHighContrast
+                          ? 'Switch to Light Mode'
+                          : 'Switch to Dark Mode',
+                ),
+          ),
           IconButton(
-            icon: const Icon(Icons.check),
+            icon: Icon(Icons.save, color: theme.colorScheme.onBackground),
             onPressed: _saveSettings,
           ),
         ],
@@ -72,45 +89,109 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            TextFormField(
-              controller: workTaskerLabelController,
-              decoration: const InputDecoration(labelText: 'App Title'),
-              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
-            ),
-            TextFormField(
-              controller: workInProgressLabelController,
-              decoration: const InputDecoration(labelText: 'Work In Progress'),
-              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
-            ),
-            TextFormField(
-              controller: startWorkdayLabelController,
-              decoration: const InputDecoration(labelText: 'Start Button'),
-              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
-            ),
-            TextFormField(
-              controller: readyToWorkLabelController,
-              decoration: const InputDecoration(labelText: 'Ready Message'),
-              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
-            ),
-            TextFormField(
-              controller: workUnitController,
-              decoration: const InputDecoration(labelText: 'Unit Label'),
-              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Labels', style: theme.textTheme.titleMedium),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: workTaskerLabelController,
+                      decoration: const InputDecoration(labelText: 'App Title'),
+                      validator:
+                          (value) => value?.isEmpty ?? true ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: workUnitController,
+                      decoration: const InputDecoration(
+                        labelText: 'Unit Label',
+                      ),
+                      validator:
+                          (value) => value?.isEmpty ?? true ? 'Required' : null,
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: multiClickValueController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Multi-Click Value',
-                helperText: 'Number of units for the second button',
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Counter Settings',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: multiClickValueController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Multi-Click Value',
+                        helperText: 'Number of units for the second button',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return 'Required';
+                        final number = int.tryParse(value);
+                        if (number == null || number <= 1)
+                          return 'Must be greater than 1';
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) return 'Required';
-                final number = int.tryParse(value);
-                if (number == null || number <= 1) return 'Must be greater than 1';
-                return null;
-              },
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Display', style: theme.textTheme.titleMedium),
+                    ValueListenableBuilder(
+                      valueListenable: settingsService.settings,
+                      builder:
+                          (context, settings, child) => Column(
+                            children: [
+                              SwitchListTile(
+                                title: const Text('High-precision Updates'),
+                                subtitle: const Text(
+                                  'Update rate display every millisecond',
+                                ),
+                                value: settings.useMillisecondUpdates,
+                                onChanged: (bool value) {
+                                  final newSettings = settings.copyWith(
+                                    useMillisecondUpdates: value,
+                                  );
+                                  settingsService.updateSettings(newSettings);
+                                },
+                              ),
+                              SwitchListTile(
+                                title: const Text('High Contrast Theme'),
+                                subtitle: const Text(
+                                  'Use dark mode with high contrast colors',
+                                ),
+                                value: settings.useHighContrast,
+                                onChanged: (bool value) {
+                                  final newSettings = settings.copyWith(
+                                    useHighContrast: value,
+                                  );
+                                  settingsService.updateSettings(newSettings);
+                                },
+                              ),
+                            ],
+                          ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),

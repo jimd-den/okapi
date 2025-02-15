@@ -19,10 +19,14 @@ class WorkClickerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Work Tasker',
-      theme: AppTheme.theme,
-      home: const StartScreen(),
+    return ValueListenableBuilder(
+      valueListenable: settingsService.settings,
+      builder:
+          (context, settings, child) => MaterialApp(
+            title: 'Work Tasker',
+            theme: AppTheme.getTheme(settings.useHighContrast),
+            home: const StartScreen(),
+          ),
     );
   }
 }
